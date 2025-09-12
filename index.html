@@ -25,8 +25,8 @@
     }
 
     .circle {
-      width: 320px;
-      height: 320px;
+      width: 720px;                 /* 1.5x from 480 */
+      height: 720px;                /* 1.5x from 480 */
       border-radius: 50%;
       background-color: rgba(255, 255, 255, 0.5);
       border: 1px solid black;
@@ -39,7 +39,7 @@
 
     .section {
       width: 100%;
-      height: 320px;
+      height: 720px;                /* match circle height */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -53,15 +53,22 @@
     }
 
     .section:first-child { opacity: 1; }
-
     .section.active { opacity: 1; }
 
-    .section p {
+    .section p,
+    .section li {
       font-family: 'Cinecaption', sans-serif;
       font-size: 20px;
       color: black;
-      margin: 0;
       line-height: 1.4;
+    }
+
+    .section p { margin: 0 0 12px 0; }
+    .bullets {
+      list-style: disc;
+      padding-left: 1.25rem;
+      margin: 0;
+      text-align: left;             /* easier to read */
     }
 
     .circle::-webkit-scrollbar { width: 0; height: 0; }
@@ -73,8 +80,16 @@
     <div class="section">
       <p>welcome to my profile <br>scroll down for more info</p>
     </div>
+
     <div class="section">
-      <p>about me <br>this is where you write your intro</p>
+      <div>
+        <p>about me</p>
+        <ul class="bullets">
+          <li><strong>name</strong> — nick</li>
+          <li><strong>degree</strong> — comp eng</li>
+          <li><strong>yr</strong> — 2nd</li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -82,7 +97,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       const circle = document.getElementById('circle');
       const sections = Array.from(circle.querySelectorAll('.section'));
-
       sections[0]?.classList.add('active');
 
       const io = 'IntersectionObserver' in window
@@ -95,7 +109,6 @@
             });
           }, { root: circle, threshold: 0.3 })
         : null;
-
       if (io) sections.forEach(s => io.observe(s));
 
       let currentIndex = 0;
