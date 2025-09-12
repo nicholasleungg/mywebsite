@@ -7,7 +7,7 @@
   <style>
     @font-face {
       font-family: 'Cinecaption';
-      src: url('cinecaption226.ttf') format('truetype'); /* local font file */
+      src: url('cinecaption226.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -28,26 +28,152 @@
       width: 320px;
       height: 320px;
       border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.5); /* 50% opaque */
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 1px solid black;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .section {
+      width: 100%;
+      height: 320px;
       display: flex;
       justify-content: center;
       align-items: center;
       text-align: center;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
       padding: 20px;
+      box-sizing: border-box;
+      opacity: 0;
+      transition: opacity 400ms ease;
     }
 
-    .circle p {
+    .section:first-child { opacity: 1; }
+
+    .section.active { opacity: 1; }
+
+    .section p {
       font-family: 'Cinecaption', sans-serif;
       font-size: 20px;
       color: black;
       margin: 0;
+      line-height: 1.4;
     }
 
+    .circle::-webkit-scrollbar { width: 0; height: 0; }
+    .circle { scrollbar-width: none; }
   </style>
 </head>
 <body>
-  <div class="circle">
-    <p>welcome to my profile <br>scroll down for more info</p>
+  <div class="circle" id="circle">
+    <div class="section">
+      <p>welcome to my profile <br>scroll down for more info</p>
+    </div>
+    <div class="section">
+      <p>about me <br>this is where you write your intro</p>
+    </div>
   </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const circle = document.getElementById('circle');
+      const sections = Array.from(circle.querySelectorAll('.section'));
+
+      sections[0]?.classList.add('active');
+
+      const io = 'IntersectionObserver' in window
+        ? new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                sections.forEach(s => s.classList.remove('active'));
+                entry.target.classList.add('active');
+              }
+            });
+          }, { root: circle, threshold: 0.3 })
+        : null;
+
+      if (io) sections.forEach(s => io.observe(s));
+
+      let currentIndex = 0;
+      let isAnimating = false;
+
+      function scrollToIndex(idx) {
+        idx = Math.max(0, Math.min(sections.length - 1, idx));
+        if (idx === currentIndex) return;
+        isAnimating = true;
+        sections[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        currentIndex = idx;
+        setTimeout(() => { isAnimating = false; }, 450);
+      }
+
+      function syncIndexToScroll() {
+        const top = circle.scrollTop;
+        const h = circle.clientHeight;
+        const idx = Math.round(top / h);
+        currentIndex = Math.max(0, Math.min(sections.length - 1, idx));
+      }
+      syncIndexToScroll();
+
+      let wheelAccum = 0;
+      circle.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (isAnimating) return;
+        wheelAccum += e.deltaY;
+        const THRESHOLD = 50;
+        if (wheelAccum > THRESHOLD) {
+          scrollToIndex(currentIndex + 1);
+          wheelAccum = 0;
+        } else if (wheelAccum < -THRESHOLD) {
+          scrollToIndex(currentIndex - 1);
+          wheelAccum = 0;
+        }
+      }, { passive: false });
+
+      circle.addEventListener('keydown', (e) => {
+        if (isAnimating) return;
+        if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+          e.preventDefault();
+          scrollToIndex(currentIndex + 1);
+        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+          e.preventDefault();
+          scrollToIndex(currentIndex - 1);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          scrollToIndex(0);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          scrollToIndex(sections.length - 1);
+        }
+      });
+      circle.setAttribute('tabindex', '0');
+
+      let touchStartY = null;
+      circle.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      circle.addEventListener('touchmove', (e) => {
+        if (touchStartY == null || isAnimating) return;
+        const dy = e.touches[0].clientY - touchStartY;
+        const SWIPE = 40;
+        if (Math.abs(dy) > SWIPE) {
+          e.preventDefault();
+          if (dy < 0) scrollToIndex(currentIndex + 1);
+          else scrollToIndex(currentIndex - 1);
+          touchStartY = null;
+        }
+      }, { passive: false });
+
+      circle.addEventListener('scroll', () => {
+        if (isAnimating) return;
+        clearTimeout(circle._snapSyncT);
+        circle._snapSyncT = setTimeout(syncIndexToScroll, 120);
+      });
+    });
+  </script>
 </body>
 </html>
