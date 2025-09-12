@@ -7,7 +7,7 @@
   <style>
     @font-face {
       font-family: 'Cinecaption';
-      src: url('cinecaption226.ttf') format('truetype');
+      src: url('cinecaption226.ttf') format('truetype'); /* local font file */
       font-weight: normal;
       font-style: normal;
     }
@@ -20,24 +20,34 @@
                   center center / cover no-repeat fixed;
       display: flex;
       justify-content: center;
-      align-items: flex-end;
+      align-items: center;
+      flex-direction: column;
     }
 
-    .whoami-link {
+    .circle {
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.5); /* 50% opaque */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .circle p {
       font-family: 'Cinecaption', sans-serif;
-      font-size: 28px;
-      color: white;
-      text-decoration: none;
-      margin-bottom: 20px;
-      transition: color 0.3s ease;
+      font-size: 20px;
+      color: black;
+      margin: 0;
     }
 
-    .whoami-link:hover {
-      color: #ffcc00; /* hover color */
-    }
   </style>
 </head>
 <body>
-  <a href="about.html" class="whoami-link">Who am I?</a>
+  <div class="circle">
+    <p>welcome to my profile <br>scroll down for more info</p>
+  </div>
 </body>
 </html>
